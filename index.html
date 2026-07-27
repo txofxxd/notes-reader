@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>我的技术笔记</title>
+
+
+<!-- Docsify主题 -->
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+
+
+<style>
+
+body {
+    font-family:
+    "Microsoft YaHei",
+    Arial,
+    sans-serif;
+}
+
+
+/* 正文宽度 */
+.markdown-section {
+    max-width: 900px;
+}
+
+
+/* 图片不要撑爆 */
+.markdown-section img {
+    max-width:100%;
+}
+
+</style>
+
+
+</head>
+
+
+
+<body>
+
+
+<div id="app">
+加载中...
+</div>
+
+
+
+<script>
+
+
+window.$docsify = {
+
+
+/*
+这里改成你的仓库地址
+
+例如：
+github用户名=abc
+仓库=FPGA-notes
+
+就是：
+
+repo:
+"abc/FPGA-notes"
+
+*/
+
+repo:"txofxxd/FPGA-IC_note",
+
+
+
+name:"我的技术笔记",
+
+
+
+// 自动读取README.md
+homepage:"README.md",
+
+
+
+// 开启左侧目录
+loadSidebar:true,
+
+
+
+// 标题层级
+subMaxLevel:3,
+
+
+
+// 搜索功能
+search:{
+
+
+paths:"auto",
+
+placeholder:"搜索笔记",
+
+noData:"没有结果"
+
+}
+
+
+
+}
+
+
+
+</script>
+
+
+
+<!-- Docsify核心 -->
+<script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+
+
+
+<!-- 搜索插件 -->
+<script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+
+
+
+<!-- 数学公式 -->
+<script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js"></script>
+
+
+
+</body>
+
+
+</html>
