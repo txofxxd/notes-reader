@@ -10,103 +10,162 @@
 <title>FPGA-IC Note</title>
 
 
-<!-- Markdown样式 -->
 <link rel="stylesheet"
 href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
 
 
-<!-- 代码高亮 -->
 <link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github.min.css">
+href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github-dark.min.css">
+
 
 
 <style>
 
 
+*{
+    box-sizing:border-box;
+}
+
+
 body{
 
-margin:0;
+    margin:0;
 
-height:100vh;
+    height:100vh;
 
-display:flex;
+    display:flex;
 
-font-family:
-"Microsoft YaHei",
-Arial,
-sans-serif;
+    font-family:
+    "Microsoft YaHei",
+    Arial,
+    sans-serif;
+
+    background:#e8d6b3;
 
 }
 
 
 
-/* 左侧文件树 */
+
+/* ====================
+   左侧 文件结构
+==================== */
+
 
 #sidebar{
 
-width:260px;
 
-overflow:auto;
+    width:260px;
 
-border-right:1px solid #ddd;
+    overflow:auto;
 
-padding:15px;
-
-box-sizing:border-box;
-
-}
+    padding:15px;
 
 
+    background:#f3e4c7;
 
-#sidebar div{
 
-cursor:pointer;
+    border-right:
+    1px solid #d2b48c;
 
-margin:8px 0;
+
+    color:#4a3828;
 
 }
 
 
 
-#sidebar div:hover{
+#sidebar h3{
 
-color:#0366d6;
-
-}
-
-
-
-/* 正文 */
-
-#content{
-
-flex:1;
-
-overflow:auto;
-
-padding:30px;
-
-box-sizing:border-box;
+    margin-top:0;
 
 }
 
 
 
-/* 文章目录 */
+.file-item{
+
+
+    padding:7px 8px;
+
+
+    margin:3px 0;
+
+
+    border-radius:5px;
+
+
+    cursor:pointer;
+
+
+    transition:0.15s;
+
+
+}
+
+
+
+.file-item:hover{
+
+
+    background:#dfc69a;
+
+
+    color:#000;
+
+
+}
+
+
+
+.file-item.active{
+
+
+    background:#c28b45;
+
+
+    color:white;
+
+
+}
+
+
+
+
+/* ====================
+   中间 文章目录
+==================== */
+
 
 #toc{
 
-width:240px;
 
-overflow:auto;
+    width:240px;
 
-border-left:1px solid #ddd;
 
-padding:15px;
+    overflow:auto;
 
-box-sizing:border-box;
 
-font-size:14px;
+    padding:15px;
+
+
+    background:#f3e4c7;
+
+
+    border-right:
+    1px solid #d2b48c;
+
+
+    color:#4a3828;
+
+
+}
+
+
+
+#toc h3{
+
+    margin-top:0;
 
 }
 
@@ -114,13 +173,18 @@ font-size:14px;
 
 #toc a{
 
-display:block;
 
-margin:6px 0;
+    display:block;
 
-text-decoration:none;
 
-color:#555;
+    margin:7px 0;
+
+
+    color:#59402a;
+
+
+    text-decoration:none;
+
 
 }
 
@@ -128,7 +192,9 @@ color:#555;
 
 #toc a:hover{
 
-color:#0366d6;
+
+    color:#8b4513;
+
 
 }
 
@@ -136,7 +202,7 @@ color:#0366d6;
 
 .toc-h2{
 
-padding-left:15px;
+    padding-left:15px;
 
 }
 
@@ -144,17 +210,86 @@ padding-left:15px;
 
 .toc-h3{
 
-padding-left:30px;
+    padding-left:30px;
 
-font-size:13px;
+    font-size:13px;
 
 }
 
 
 
+
+
+/* ====================
+   右侧 Markdown正文
+==================== */
+
+
+#content{
+
+
+    flex:1;
+
+
+    overflow:auto;
+
+
+    padding:35px;
+
+
+    background:#2b2118;
+
+
+}
+
+
+
+/* 覆盖github markdown默认 */
+
 .markdown-body{
 
-max-width:950px;
+
+    max-width:950px;
+
+
+    background:transparent!important;
+
+
+    color:#e8dcc8;
+
+
+}
+
+
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3{
+
+
+    color:#ffe7bd;
+
+
+}
+
+
+
+.markdown-body p,
+.markdown-body li{
+
+
+    color:#e8dcc8;
+
+
+}
+
+
+
+.markdown-body a{
+
+
+    color:#d9a066;
+
 
 }
 
@@ -162,37 +297,64 @@ max-width:950px;
 
 .markdown-body img{
 
-max-width:100%;
+
+    max-width:100%;
+
 
 }
 
 
+
+.markdown-body pre{
+
+
+    background:#17120e;
+
+
+    border-radius:8px;
+
+
+    padding:15px;
+
+
+}
+
+
+
+.markdown-body code{
+
+
+    color:#ffd28a;
+
+
+}
+
+
+
+/* 手机适配 */
 
 @media(max-width:900px){
 
 
-#toc{
+    #sidebar{
 
-display:none;
+        width:170px;
 
-}
-
-
-#sidebar{
-
-width:180px;
-
-font-size:14px;
-
-}
+    }
 
 
-#content{
+    #toc{
 
-padding:15px;
+        display:none;
 
-}
+    }
 
+
+    #content{
+
+        padding:15px;
+
+    }
 
 }
 
@@ -205,13 +367,18 @@ padding:15px;
 
 
 
+
+
 <body>
 
 
 
-<!-- 文件列表 -->
+
+<!-- 文件结构 -->
+
 
 <div id="sidebar">
+
 
 <h3>
 📚 FPGA-IC Note
@@ -230,24 +397,31 @@ padding:15px;
 
 
 
+
 <!-- 正文 -->
+
 
 <div id="content"
 class="markdown-body">
 
+
 加载中...
+
 
 </div>
 
 
 
 
-<!-- 目录 -->
+
+<!-- 文章目录 -->
+
 
 <div id="toc">
 
+
 <h3>
-目录
+📑 目录
 </h3>
 
 
@@ -257,6 +431,8 @@ class="markdown-body">
 
 
 </div>
+
+
 
 
 
@@ -272,17 +448,21 @@ class="markdown-body">
 
 
 
+
+
 <script>
 
 
-//==============================
-// GitHub仓库配置
-//==============================
+//=========================
+// GitHub仓库
+//=========================
 
 
 const USER="txofxxd";
 
+
 const REPO="FPGA-IC_note";
+
 
 const BRANCH="main";
 
@@ -295,35 +475,6 @@ const RAW_BASE=
 
 const API_URL=
 `https://api.github.com/repos/${USER}/${REPO}/git/trees/${BRANCH}?recursive=1`;
-
-
-
-//==============================
-// Markdown设置
-//==============================
-
-
-marked.setOptions({
-
-highlight:function(code,lang){
-
-if(lang && hljs.getLanguage(lang)){
-
-return hljs.highlight(
-code,
-{
-language:lang
-}
-).value;
-
-}
-
-return hljs.highlightAuto(code).value;
-
-
-}
-
-});
 
 
 
@@ -342,24 +493,67 @@ document.getElementById("toc-list");
 
 
 
+let currentFile=null;
 
 
-//==============================
-// 获取Markdown列表
-//==============================
+
+
+
+//=========================
+// markdown解析
+//=========================
+
+
+marked.setOptions({
+
+highlight:function(code,lang){
+
+
+if(lang && hljs.getLanguage(lang)){
+
+
+return hljs.highlight(code,
+{
+language:lang
+}).value;
+
+
+}
+
+
+return hljs.highlightAuto(code).value;
+
+
+}
+
+
+});
+
+
+
+
+
+
+
+
+//=========================
+// 获取md文件
+//=========================
 
 
 fetch(API_URL)
 
+
 .then(res=>res.json())
+
 
 .then(data=>{
 
 
-let files=data.tree.filter(
+let files=
+data.tree.filter(
 
-item=>
-item.path.endsWith(".md")
+x=>x.path.endsWith(".md")
 
 );
 
@@ -372,28 +566,37 @@ filelist.innerHTML="";
 files.forEach(file=>{
 
 
-let div=document.createElement("div");
+let div=
+document.createElement("div");
+
+
+
+div.className="file-item";
+
 
 
 div.innerHTML=
 "📄 "+file.path;
 
 
-div.onclick=()=>{
 
-loadMarkdown(file.path);
+div.onclick=function(){
+
+
+loadMarkdown(file.path,div);
+
 
 };
+
 
 
 filelist.appendChild(div);
 
 
+
 });
 
 
-
-//默认打开README
 
 loadMarkdown("README.md");
 
@@ -405,15 +608,19 @@ loadMarkdown("README.md");
 
 
 
-//==============================
-// 加载Markdown
-//==============================
 
 
-function loadMarkdown(path){
+//=========================
+// 加载文章
+//=========================
 
 
-fetch(RAW_BASE+encodeURI(path))
+function loadMarkdown(path,element){
+
+
+fetch(
+RAW_BASE+encodeURI(path)
+)
 
 
 .then(res=>res.text())
@@ -421,8 +628,6 @@ fetch(RAW_BASE+encodeURI(path))
 
 .then(md=>{
 
-
-// 修复图片路径
 
 md=fixImages(md);
 
@@ -433,8 +638,6 @@ marked.parse(md);
 
 
 
-//生成目录
-
 generateTOC();
 
 
@@ -442,7 +645,25 @@ generateTOC();
 MathJax.typeset();
 
 
+
 });
+
+
+
+if(element){
+
+
+document.querySelectorAll(".file-item")
+.forEach(
+x=>x.classList.remove("active")
+);
+
+
+
+element.classList.add("active");
+
+
+}
 
 
 }
@@ -452,12 +673,16 @@ MathJax.typeset();
 
 
 
-//==============================
+
+
+
+//=========================
 // 图片路径转换
-//==============================
+//=========================
 
 
 function fixImages(md){
+
 
 
 return md.replace(
@@ -473,7 +698,9 @@ return `![${alt}](${RAW_BASE}media/${encodeURIComponent(path)})`;
 
 }
 
+
 );
+
 
 
 }
@@ -483,16 +710,18 @@ return `![${alt}](${RAW_BASE}media/${encodeURIComponent(path)})`;
 
 
 
-//==============================
-// 生成文章目录
-//==============================
+
+
+
+//=========================
+// 生成目录
+//=========================
 
 
 function generateTOC(){
 
 
 toc.innerHTML="";
-
 
 
 let headers=
@@ -506,7 +735,8 @@ headers.forEach((h,index)=>{
 
 
 let id=
-"header-"+index;
+"heading-"+index;
+
 
 
 h.id=id;
@@ -517,10 +747,12 @@ let a=
 document.createElement("a");
 
 
+
 a.href="#"+id;
 
 
-a.innerText=h.innerText;
+a.innerText=
+h.innerText;
 
 
 
@@ -542,7 +774,9 @@ a.className="toc-h3";
 toc.appendChild(a);
 
 
+
 });
+
 
 
 }
