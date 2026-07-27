@@ -1,38 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 
 <head>
 
 <meta charset="UTF-8">
 
-<title>我的技术笔记</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FPGA-IC Note</title>
 
 
-<!-- Docsify主题 -->
+<!-- Markdown样式 -->
 <link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
+
+
+<!-- 代码高亮 -->
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github.min.css">
 
 
 <style>
 
-body {
-    font-family:
-    "Microsoft YaHei",
-    Arial,
-    sans-serif;
+
+body{
+
+margin:0;
+
+height:100vh;
+
+display:flex;
+
+font-family:
+"Microsoft YaHei",
+Arial,
+sans-serif;
+
 }
 
 
-/* 正文宽度 */
-.markdown-section {
-    max-width: 900px;
+
+/* 左侧文件树 */
+
+#sidebar{
+
+width:260px;
+
+overflow:auto;
+
+border-right:1px solid #ddd;
+
+padding:15px;
+
+box-sizing:border-box;
+
 }
 
 
-/* 图片不要撑爆 */
-.markdown-section img {
-    max-width:100%;
+
+#sidebar div{
+
+cursor:pointer;
+
+margin:8px 0;
+
 }
+
+
+
+#sidebar div:hover{
+
+color:#0366d6;
+
+}
+
+
+
+/* 正文 */
+
+#content{
+
+flex:1;
+
+overflow:auto;
+
+padding:30px;
+
+box-sizing:border-box;
+
+}
+
+
+
+/* 文章目录 */
+
+#toc{
+
+width:240px;
+
+overflow:auto;
+
+border-left:1px solid #ddd;
+
+padding:15px;
+
+box-sizing:border-box;
+
+font-size:14px;
+
+}
+
+
+
+#toc a{
+
+display:block;
+
+margin:6px 0;
+
+text-decoration:none;
+
+color:#555;
+
+}
+
+
+
+#toc a:hover{
+
+color:#0366d6;
+
+}
+
+
+
+.toc-h2{
+
+padding-left:15px;
+
+}
+
+
+
+.toc-h3{
+
+padding-left:30px;
+
+font-size:13px;
+
+}
+
+
+
+.markdown-body{
+
+max-width:950px;
+
+}
+
+
+
+.markdown-body img{
+
+max-width:100%;
+
+}
+
+
+
+@media(max-width:900px){
+
+
+#toc{
+
+display:none;
+
+}
+
+
+#sidebar{
+
+width:180px;
+
+font-size:14px;
+
+}
+
+
+#content{
+
+padding:15px;
+
+}
+
+
+}
+
+
 
 </style>
 
@@ -44,67 +208,341 @@ body {
 <body>
 
 
-<div id="app">
+
+<!-- 文件列表 -->
+
+<div id="sidebar">
+
+<h3>
+📚 FPGA-IC Note
+</h3>
+
+
+<div id="filelist">
+
 加载中...
+
 </div>
+
+
+</div>
+
+
+
+
+<!-- 正文 -->
+
+<div id="content"
+class="markdown-body">
+
+加载中...
+
+</div>
+
+
+
+
+<!-- 目录 -->
+
+<div id="toc">
+
+<h3>
+目录
+</h3>
+
+
+<div id="toc-list">
+
+</div>
+
+
+</div>
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 
 
 <script>
 
 
-window.$docsify = {
+//==============================
+// GitHub仓库配置
+//==============================
 
 
-/*
-这里改成你的仓库地址
+const USER="txofxxd";
 
-例如：
-github用户名=abc
-仓库=FPGA-notes
+const REPO="FPGA-IC_note";
 
-就是：
-
-repo:
-"abc/FPGA-notes"
-
-*/
-
-repo:"txofxxd/FPGA-IC_note",
+const BRANCH="main";
 
 
 
-name:"我的技术笔记",
+const RAW_BASE=
+`https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/`;
 
 
 
-// 自动读取README.md
-homepage:"README.md",
+const API_URL=
+`https://api.github.com/repos/${USER}/${REPO}/git/trees/${BRANCH}?recursive=1`;
 
 
 
-// 开启左侧目录
-loadSidebar:true,
+//==============================
+// Markdown设置
+//==============================
 
 
+marked.setOptions({
 
-// 标题层级
-subMaxLevel:3,
+highlight:function(code,lang){
 
+if(lang && hljs.getLanguage(lang)){
 
-
-// 搜索功能
-search:{
-
-
-paths:"auto",
-
-placeholder:"搜索笔记",
-
-noData:"没有结果"
+return hljs.highlight(
+code,
+{
+language:lang
+}
+).value;
 
 }
 
+return hljs.highlightAuto(code).value;
+
+
+}
+
+});
+
+
+
+
+
+const filelist=
+document.getElementById("filelist");
+
+
+const content=
+document.getElementById("content");
+
+
+const toc=
+document.getElementById("toc-list");
+
+
+
+
+
+//==============================
+// 获取Markdown列表
+//==============================
+
+
+fetch(API_URL)
+
+.then(res=>res.json())
+
+.then(data=>{
+
+
+let files=data.tree.filter(
+
+item=>
+item.path.endsWith(".md")
+
+);
+
+
+
+filelist.innerHTML="";
+
+
+
+files.forEach(file=>{
+
+
+let div=document.createElement("div");
+
+
+div.innerHTML=
+"📄 "+file.path;
+
+
+div.onclick=()=>{
+
+loadMarkdown(file.path);
+
+};
+
+
+filelist.appendChild(div);
+
+
+});
+
+
+
+//默认打开README
+
+loadMarkdown("README.md");
+
+
+});
+
+
+
+
+
+
+//==============================
+// 加载Markdown
+//==============================
+
+
+function loadMarkdown(path){
+
+
+fetch(RAW_BASE+encodeURI(path))
+
+
+.then(res=>res.text())
+
+
+.then(md=>{
+
+
+// 修复图片路径
+
+md=fixImages(md);
+
+
+
+content.innerHTML=
+marked.parse(md);
+
+
+
+//生成目录
+
+generateTOC();
+
+
+
+MathJax.typeset();
+
+
+});
+
+
+}
+
+
+
+
+
+
+//==============================
+// 图片路径转换
+//==============================
+
+
+function fixImages(md){
+
+
+return md.replace(
+
+/!\[(.*?)\]\((?:\.\/)?media\/(.+?)\)/g,
+
+
+function(match,alt,path){
+
+
+return `![${alt}](${RAW_BASE}media/${encodeURIComponent(path)})`;
+
+
+}
+
+);
+
+
+}
+
+
+
+
+
+
+//==============================
+// 生成文章目录
+//==============================
+
+
+function generateTOC(){
+
+
+toc.innerHTML="";
+
+
+
+let headers=
+content.querySelectorAll(
+"h1,h2,h3"
+);
+
+
+
+headers.forEach((h,index)=>{
+
+
+let id=
+"header-"+index;
+
+
+h.id=id;
+
+
+
+let a=
+document.createElement("a");
+
+
+a.href="#"+id;
+
+
+a.innerText=h.innerText;
+
+
+
+if(h.tagName==="H2"){
+
+a.className="toc-h2";
+
+}
+
+
+if(h.tagName==="H3"){
+
+a.className="toc-h3";
+
+}
+
+
+
+toc.appendChild(a);
+
+
+});
 
 
 }
@@ -115,22 +553,6 @@ noData:"没有结果"
 
 
 
-<!-- Docsify核心 -->
-<script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
-
-
-
-<!-- 搜索插件 -->
-<script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
-
-
-
-<!-- 数学公式 -->
-<script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js"></script>
-
-
-
 </body>
-
 
 </html>
