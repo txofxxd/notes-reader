@@ -2,25 +2,14 @@
 <html lang="zh-CN">
 
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>FPGA-IC Note</title>
 
-
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
-
-
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github-dark.min.css">
-
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github-dark.min.css">
 
 <style>
-
 *{box-sizing:border-box}
 html,body{height:100%;}
 body{
@@ -41,49 +30,52 @@ body > #app {
 /* ==================== 左侧 文件结构 ==================== */
 #sidebar{
   width:260px;
-  min-width:60px;
-  overflow:auto;
+  min-width:40px;
+  overflow:hidden;
   padding:15px;
   background:#f3e4c7;
   border-right:1px solid #d2b48c;
   color:#000;
   order:1;
-  transition:width .18s, padding .18s;
+  transition:width .22s ease, padding .18s ease;
 }
+#sidebar .inner{overflow:auto}
 #sidebar.collapsed{
-  width:0 !important;
-  padding:0 !important;
+  width:0;
+  padding:0;
   border-right:none;
-  overflow:hidden;
 }
 #sidebar h3{display:flex;align-items:center;justify-content:space-between;margin:0}
-#sidebar h3 .toggle-btn{cursor:pointer;padding:4px 6px;border-radius:4px;background:transparent;border:1px solid transparent}
-#sidebar h3 .toggle-btn:hover{border-color:rgba(0,0,0,0.12)}
+#sidebar h3 .toggle-btn{cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;background:transparent;border:1px solid transparent}
+#sidebar h3 .toggle-btn:focus{outline:2px solid rgba(0,0,0,0.12)}
+#sidebar h3 .toggle-btn svg{width:14px;height:14px;transform-origin:center;transition:transform .18s}
 
 .file-item{padding:7px 8px;margin:3px 0;border-radius:5px;cursor:pointer;transition:0.15s}
 .file-item:hover{background:#dfc69a;color:#000}
 .file-item.active{background:#c28b45;color:#000}
 
 /* ==================== 分隔条（可拖拽调整宽度） ==================== */
-.resizer{width:8px;cursor:col-resize;background:transparent;flex-shrink:0}
+.resizer{width:10px;cursor:col-resize;background:transparent;flex-shrink:0;z-index:5}
 .resizer:hover{background:rgba(0,0,0,0.06)}
 
 /* ==================== 中间 文章目录 ==================== */
 #toc{
   width:240px;
-  min-width:60px;
-  overflow:auto;
+  min-width:40px;
+  overflow:hidden;
   padding:15px;
   background:#f3e4c7;
   border-right:1px solid #d2b48c;
   color:#000;
   order:2;
-  transition:width .18s, padding .18s;
+  transition:width .22s ease, padding .18s ease;
 }
-#toc.collapsed{width:0 !important;padding:0 !important;border-right:none;overflow:hidden}
+#toc .inner{overflow:auto}
+#toc.collapsed{width:0;padding:0;border-right:none}
 #toc h3{display:flex;align-items:center;justify-content:space-between;margin:0}
-#toc h3 .toggle-btn{cursor:pointer;padding:4px 6px;border-radius:4px;background:transparent;border:1px solid transparent}
-#toc h3 .toggle-btn:hover{border-color:rgba(0,0,0,0.12)}
+#toc h3 .toggle-btn{cursor:pointer;padding:4px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;background:transparent;border:1px solid transparent}
+#toc h3 .toggle-btn:focus{outline:2px solid rgba(0,0,0,0.12)}
+#toc h3 .toggle-btn svg{width:14px;height:14px;transform-origin:center;transition:transform .18s}
 
 #toc a{display:block;margin:7px 0;color:#000;text-decoration:none}
 #toc a:hover{color:#8b4513}
@@ -124,9 +116,11 @@ body > #app {
 }
 .markdown-body pre code{background:transparent !important;color:inherit !important}
 .markdown-body code{background:#f0f0f0;padding:2px 6px;border-radius:4px;color:inherit}
-
 /* 保持高亮但文字为正文颜色 */
 .markdown-body pre .hljs{background:transparent !important;color:inherit !important}
+
+/* 按钮旋转样式 */
+.collapsed .toggle-btn svg.rotate-180{transform:rotate(180deg)}
 
 /* 手机适配 */
 @media(max-width:900px){
@@ -135,35 +129,38 @@ body > #app {
   #content{padding:15px}
   .resizer{display:none}
 }
-
 </style>
-
 </head>
 
 <body>
-
 <div id="app">
   <!-- 文件结构 -->
   <div id="sidebar">
     <h3>
       <span>📚 FPGA-IC Note</span>
-      <span class="toggle-btn" id="toggle-sidebar">收起</span>
+      <button class="toggle-btn" id="toggle-sidebar" aria-label="切换文件结构" title="切换文件结构" tabindex="0">
+        <!-- chevron icon, points left when expanded, right when collapsed -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
     </h3>
-    <div id="filelist">加载中...</div>
+    <div class="inner" id="filelist">加载中...</div>
   </div>
 
-  <div class="resizer" id="resizer-1" data-left="sidebar" data-right="toc"></div>
+  <div class="resizer" id="resizer-1" data-left="sidebar" data-right="toc" title="拖动调整宽度" aria-hidden="false"></div>
 
   <!-- 文章目录 -->
   <div id="toc">
     <h3>
       <span>📑 目录</span>
-      <span class="toggle-btn" id="toggle-toc">收起</span>
+      <button class="toggle-btn" id="toggle-toc" aria-label="切换目录" title="切换目录" tabindex="0">
+        <!-- chevron icon, points left when expanded, right when collapsed -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
     </h3>
-    <div id="toc-list"></div>
+    <div class="inner" id="toc-list"></div>
   </div>
 
-  <div class="resizer" id="resizer-2" data-left="toc" data-right="content"></div>
+  <div class="resizer" id="resizer-2" data-left="toc" data-right="content" title="拖动调整宽度" aria-hidden="false"></div>
 
   <!-- 正文 -->
   <div id="content" class="markdown-body">加载中...</div>
@@ -183,7 +180,7 @@ const filelist=document.getElementById("filelist");
 const content=document.getElementById("content");
 const toc=document.getElementById("toc-list");
 
-// 读取/存储列宽
+// helpers for persist
 function saveCols(){
   try{
     const s=document.getElementById('sidebar');
@@ -198,27 +195,49 @@ function loadCols(){
     const t=document.getElementById('toc');
     const sw=localStorage.getItem('notes_reader_sidebar_w');
     const tw=localStorage.getItem('notes_reader_toc_w');
-    if(sw) s.style.width=sw;
-    if(tw) t.style.width=tw;
+    if(sw && !s.classList.contains('collapsed')) s.style.width=sw;
+    if(tw && !t.classList.contains('collapsed')) t.style.width=tw;
   }catch(e){console.warn(e)}
 }
 
-// 折叠控制
-function toggleCollapse(id){
+// collapse/expand logic improved: store prev width and restore
+function setCollapsed(id, collapse){
   const el=document.getElementById(id);
-  const btn=document.getElementById(id==="sidebar"?"toggle-sidebar":"toggle-toc");
-  if(el.classList.contains('collapsed')){
-    el.classList.remove('collapsed');
-    btn.innerText='收起';
-  }else{
+  const btn=document.getElementById(id==='sidebar'?'toggle-sidebar':'toggle-toc');
+  if(collapse){
+    // store previous width
+    const curW = window.getComputedStyle(el).width;
+    el.dataset.prevWidth = curW;
+    el.style.width = '0px';
     el.classList.add('collapsed');
-    btn.innerText='展开';
+    btn.querySelector('svg').classList.add('rotate-180');
+    btn.setAttribute('aria-pressed','true');
+    btn.title = '展开';
+  }else{
+    const prev = el.dataset.prevWidth || (id==='sidebar'?'260px':'240px');
+    el.style.width = prev;
+    el.classList.remove('collapsed');
+    btn.querySelector('svg').classList.remove('rotate-180');
+    btn.setAttribute('aria-pressed','false');
+    btn.title = '收起';
   }
   saveCols();
 }
+function toggleCollapse(id){
+  const el=document.getElementById(id);
+  setCollapsed(id, !el.classList.contains('collapsed'));
+}
 
-document.getElementById('toggle-sidebar').addEventListener('click',()=>toggleCollapse('sidebar'));
-document.getElementById('toggle-toc').addEventListener('click',()=>toggleCollapse('toc'));
+// keyboard support for buttons
+function makeToggleAccessible(btnId, targetId){
+  const btn = document.getElementById(btnId);
+  btn.addEventListener('click', ()=> toggleCollapse(targetId));
+  btn.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleCollapse(targetId); }
+  });
+}
+makeToggleAccessible('toggle-sidebar','sidebar');
+makeToggleAccessible('toggle-toc','toc');
 
 // 拖拽调整宽度
 function setupResizer(resizerId){
@@ -228,30 +247,53 @@ function setupResizer(resizerId){
   const rightId=res.dataset.right;
   const leftEl=document.getElementById(leftId);
   const rightEl=document.getElementById(rightId);
-  let startX, startLeftW, startRightW, dragging=false;
+  let startX=0, startLeftW=0, startRightW=0, dragging=false;
 
-  const onMove=(e)=>{
+  const onMove=(clientX)=>{
     if(!dragging) return;
-    const dx=(e.touches?e.touches[0].clientX:e.clientX)-startX;
-    const newLeft= Math.max(40, startLeftW + dx);
-    const newRight= Math.max(40, startRightW - dx);
-    leftEl.style.width=newLeft+'px';
-    rightEl.style.width=newRight+'px';
+    const dx = clientX - startX;
+    let newLeft = startLeftW + dx;
+    let newRight = startRightW - dx;
+    // enforce minimums
+    const min=40;
+    if(newLeft < min) newLeft = min;
+    if(newRight < min) newRight = min;
+    leftEl.style.width = newLeft + 'px';
+    rightEl.style.width = newRight + 'px';
   };
-  const onUp=()=>{ if(!dragging) return; dragging=false; saveCols(); window.removeEventListener('mousemove',onMove); window.removeEventListener('mouseup',onUp); window.removeEventListener('touchmove',onMove); window.removeEventListener('touchend',onUp); };
 
-  res.addEventListener('mousedown',(e)=>{
+  const onMouseMove = (e)=> onMove(e.clientX);
+  const onTouchMove = (e)=> onMove(e.touches[0].clientX);
+  const onUp = ()=>{ if(!dragging) return; dragging=false; saveCols(); window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onUp); window.removeEventListener('touchmove', onTouchMove); window.removeEventListener('touchend', onUp); document.body.style.userSelect=''; };
+
+  res.addEventListener('mousedown', (e)=>{
     if(window.innerWidth<=900) return; // 小屏禁用
-    dragging=true; startX=e.clientX; startLeftW=leftEl.getBoundingClientRect().width; startRightW=rightEl.getBoundingClientRect().width; window.addEventListener('mousemove',onMove); window.addEventListener('mouseup',onUp); e.preventDefault();
+    dragging = true;
+    startX = e.clientX;
+    startLeftW = leftEl.getBoundingClientRect().width;
+    startRightW = rightEl.getBoundingClientRect().width;
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onUp);
+    document.body.style.userSelect='none';
+    e.preventDefault();
   });
-  res.addEventListener('touchstart',(e)=>{
+  res.addEventListener('touchstart', (e)=>{
     if(window.innerWidth<=900) return;
-    dragging=true; startX=e.touches[0].clientX; startLeftW=leftEl.getBoundingClientRect().width; startRightW=rightEl.getBoundingClientRect().width; window.addEventListener('touchmove',onMove); window.addEventListener('touchend',onUp); e.preventDefault();
+    dragging = true;
+    startX = e.touches[0].clientX;
+    startLeftW = leftEl.getBoundingClientRect().width;
+    startRightW = rightEl.getBoundingClientRect().width;
+    window.addEventListener('touchmove', onTouchMove);
+    window.addEventListener('touchend', onUp);
+    document.body.style.userSelect='none';
+    e.preventDefault();
   });
 }
 
 setupResizer('resizer-1');
 setupResizer('resizer-2');
+
+// restore widths on load
 loadCols();
 
 //========================= markdown & repo logic =========================
@@ -263,7 +305,8 @@ marked.setOptions({
 });
 
 fetch(API_URL).then(res=>res.json()).then(data=>{
-  let files=data.tree.filter(x=>x.path.endsWith('.md'));
+  let files = [];
+  if(data && data.tree) files = data.tree.filter(x=>x.path && x.path.endsWith('.md'));
   filelist.innerHTML='';
   files.forEach(file=>{
     let div=document.createElement('div');
@@ -272,7 +315,7 @@ fetch(API_URL).then(res=>res.json()).then(data=>{
     div.onclick=function(){ loadMarkdown(file.path,div); };
     filelist.appendChild(div);
   });
-  loadMarkdown('README.md');
+  if(files.length>0) loadMarkdown('README.md');
 }).catch(err=>{filelist.innerText='无法加载文件列表'});
 
 function loadMarkdown(path,element){
@@ -308,6 +351,5 @@ function generateTOC(){
 }
 
 </script>
-
 </body>
 </html>
