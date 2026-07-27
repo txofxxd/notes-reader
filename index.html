@@ -21,753 +21,293 @@ href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github-dark.min.css">
 
 <style>
 
-
-*{
-    box-sizing:border-box;
-}
-
-
+*{box-sizing:border-box}
+html,body{height:100%;}
 body{
-
-    margin:0;
-
-    height:100vh;
-
-    display:flex;
-
-    font-family:
-    "Microsoft YaHei",
-    Arial,
-    sans-serif;
-
-    background:#e8d6b3;
-
+  margin:0;
+  height:100vh;
+  display:flex;
+  font-family:"Microsoft YaHei", Arial, sans-serif;
+  background:#e8d6b3;
 }
 
+/* 容器：三列布局 */
+body > #app {
+  display:flex;
+  flex:1;
+  min-width:0; /* 让子项可缩小 */
+}
 
-
-
-/* ====================
-   左侧 文件结构
-==================== */
-
-
+/* ==================== 左侧 文件结构 ==================== */
 #sidebar{
-
-
-    width:260px;
-
-    overflow:auto;
-
-    padding:15px;
-
-
-    background:#f3e4c7;
-
-
-    border-right:
-    1px solid #d2b48c;
-
-
-    color:#000;
-
-    /* 放到最左 */
-    order: 1;
-
+  width:260px;
+  min-width:60px;
+  overflow:auto;
+  padding:15px;
+  background:#f3e4c7;
+  border-right:1px solid #d2b48c;
+  color:#000;
+  order:1;
+  transition:width .18s, padding .18s;
 }
-
-
-#sidebar h3{
-
-    margin-top:0;
-
+#sidebar.collapsed{
+  width:0 !important;
+  padding:0 !important;
+  border-right:none;
+  overflow:hidden;
 }
+#sidebar h3{display:flex;align-items:center;justify-content:space-between;margin:0}
+#sidebar h3 .toggle-btn{cursor:pointer;padding:4px 6px;border-radius:4px;background:transparent;border:1px solid transparent}
+#sidebar h3 .toggle-btn:hover{border-color:rgba(0,0,0,0.12)}
 
+.file-item{padding:7px 8px;margin:3px 0;border-radius:5px;cursor:pointer;transition:0.15s}
+.file-item:hover{background:#dfc69a;color:#000}
+.file-item.active{background:#c28b45;color:#000}
 
-.file-item{
+/* ==================== 分隔条（可拖拽调整宽度） ==================== */
+.resizer{width:8px;cursor:col-resize;background:transparent;flex-shrink:0}
+.resizer:hover{background:rgba(0,0,0,0.06)}
 
-
-    padding:7px 8px;
-
-
-    margin:3px 0;
-
-
-    border-radius:5px;
-
-
-    cursor:pointer;
-
-
-    transition:0.15s;
-
-
-}
-
-
-.file-item:hover{
-
-
-    background:#dfc69a;
-
-
-    color:#000;
-
-
-}
-
-
-.file-item.active{
-
-
-    background:#c28b45;
-
-
-    color:#000;
-
-
-}
-
-
-
-/* ====================
-   中间 文章目录
-==================== */
-
-
+/* ==================== 中间 文章目录 ==================== */
 #toc{
-
-
-    width:240px;
-
-
-    overflow:auto;
-
-
-    padding:15px;
-
-
-    background:#f3e4c7;
-
-
-    border-right:
-    1px solid #d2b48c;
-
-
-    color:#000;
-
-    /* 放到中间 */
-    order: 2;
-
+  width:240px;
+  min-width:60px;
+  overflow:auto;
+  padding:15px;
+  background:#f3e4c7;
+  border-right:1px solid #d2b48c;
+  color:#000;
+  order:2;
+  transition:width .18s, padding .18s;
 }
+#toc.collapsed{width:0 !important;padding:0 !important;border-right:none;overflow:hidden}
+#toc h3{display:flex;align-items:center;justify-content:space-between;margin:0}
+#toc h3 .toggle-btn{cursor:pointer;padding:4px 6px;border-radius:4px;background:transparent;border:1px solid transparent}
+#toc h3 .toggle-btn:hover{border-color:rgba(0,0,0,0.12)}
 
+#toc a{display:block;margin:7px 0;color:#000;text-decoration:none}
+#toc a:hover{color:#8b4513}
+.toc-h2{padding-left:15px}
+.toc-h3{padding-left:30px;font-size:13px}
 
-#toc h3{
-
-    margin-top:0;
-
-}
-
-
-#toc a{
-
-
-    display:block;
-
-
-    margin:7px 0;
-
-
-    color:#000;
-
-
-    text-decoration:none;
-
-
-}
-
-
-#toc a:hover{
-
-
-    color:#8b4513;
-
-
-}
-
-
-.toc-h2{
-
-    padding-left:15px;
-
-}
-
-
-.toc-h3{
-
-    padding-left:30px;
-
-    font-size:13px;
-
-}
-
-
-
-
-/* ====================
-   右侧 Markdown正文
-==================== */
-
-
+/* ==================== 右侧 Markdown正文 ==================== */
 #content{
-
-
-    flex:1;
-
-
-    overflow:auto;
-
-
-    padding:35px;
-
-
-    background:#2b2118;
-
-
-    /* 放到最右 */
-    order: 3;
-
+  flex:1;
+  min-width:0; /* 重要：让内容在缩小时能滚动 */
+  overflow:auto;
+  padding:35px;
+  background:#2b2118;
+  order:3;
 }
-
 
 /* 覆盖github markdown默认 */
-
 .markdown-body{
-
-
-    /* 不限制宽度，让内容可伸展，避免空白 */
-    max-width:none;
-    width:100%;
-
-
-    background:transparent!important;
-
-
-    color:#000;
-
-
+  /* 取消最大宽度，使用容器宽度 */
+  max-width:none;
+  width:100%;
+  background:transparent!important;
+  color:#000; /* 正文文字为黑色（按要求） */
 }
+.markdown-body h1,.markdown-body h2,.markdown-body h3{color:#000}
+.markdown-body p,.markdown-body li{color:#000}
+.markdown-body a{color:#000}
+.markdown-body img{max-width:100%}
 
-
-
-.markdown-body h1,
-.markdown-body h2,
-.markdown-body h3{
-
-
-    color:#000;
-
-
-}
-
-
-
-.markdown-body p,
-.markdown-body li{
-
-
-    color:#000;
-
-
-}
-
-
-
-.markdown-body a{
-
-
-    color:#000;
-
-
-}
-
-
-
-.markdown-body img{
-
-
-    max-width:100%;
-
-
-}
-
-
-
+/* 代码块：改成浅色背景并与正文文字保持一致 */
 .markdown-body pre{
-
-
-    background:#17120e;
-
-
-    border-radius:8px;
-
-
-    padding:15px;
-
-
+  background:#f5f5f5 !important; /* 浅色背景 */
+  color:#000 !important; /* 与正文一致 */
+  border:1px solid #e0e0e0;
+  border-radius:6px;
+  padding:12px 14px;
+  overflow:auto;
 }
+.markdown-body pre code{background:transparent !important;color:inherit !important}
+.markdown-body code{background:#f0f0f0;padding:2px 6px;border-radius:4px;color:inherit}
 
-
-
-.markdown-body code{
-
-
-    /* 保持代码高亮颜色，避免在深色背景上变黑不可读 */
-    color:inherit;
-
-
-}
-
+/* 保持高亮但文字为正文颜色 */
+.markdown-body pre .hljs{background:transparent !important;color:inherit !important}
 
 /* 手机适配 */
-
 @media(max-width:900px){
-
-
-    #sidebar{
-
-        width:170px;
-
-    }
-
-
-    #toc{
-
-        display:none;
-
-    }
-
-
-    #content{
-
-        padding:15px;
-
-    }
-
+  #sidebar{width:170px}
+  #toc{display:none}
+  #content{padding:15px}
+  .resizer{display:none}
 }
-
-
 
 </style>
 
-
 </head>
-
-
-
-
 
 <body>
 
+<div id="app">
+  <!-- 文件结构 -->
+  <div id="sidebar">
+    <h3>
+      <span>📚 FPGA-IC Note</span>
+      <span class="toggle-btn" id="toggle-sidebar">收起</span>
+    </h3>
+    <div id="filelist">加载中...</div>
+  </div>
 
+  <div class="resizer" id="resizer-1" data-left="sidebar" data-right="toc"></div>
 
+  <!-- 文章目录 -->
+  <div id="toc">
+    <h3>
+      <span>📑 目录</span>
+      <span class="toggle-btn" id="toggle-toc">收起</span>
+    </h3>
+    <div id="toc-list"></div>
+  </div>
 
-<!-- 文件结构 -->
+  <div class="resizer" id="resizer-2" data-left="toc" data-right="content"></div>
 
-
-<div id="sidebar">
-
-
-<h3>
-📚 FPGA-IC Note
-</h3>
-
-
-<div id="filelist">
-
-加载中...
-
+  <!-- 正文 -->
+  <div id="content" class="markdown-body">加载中...</div>
 </div>
-
-
-</div>
-
-
-
-
-
-<!-- 正文 -->
-
-
-<div id="content"
-class="markdown-body">
-
-
-加载中...
-
-
-</div>
-
-
-
-
-
-<!-- 文章目录 -->
-
-
-<div id="toc">
-
-
-<h3>
-📑 目录
-</h3>
-
-
-<div id="toc-list">
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-
 <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
-
-
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-
-
-
-
 <script>
-
-
-//=========================
-// GitHub仓库
-//=========================
-
-
 const USER="txofxxd";
-
-
 const REPO="FPGA-IC_note";
-
-
 const BRANCH="main";
+const RAW_BASE=`https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/`;
+const API_URL=`https://api.github.com/repos/${USER}/${REPO}/git/trees/${BRANCH}?recursive=1`;
+const filelist=document.getElementById("filelist");
+const content=document.getElementById("content");
+const toc=document.getElementById("toc-list");
 
+// 读取/存储列宽
+function saveCols(){
+  try{
+    const s=document.getElementById('sidebar');
+    const t=document.getElementById('toc');
+    localStorage.setItem('notes_reader_sidebar_w', s.style.width || window.getComputedStyle(s).width);
+    localStorage.setItem('notes_reader_toc_w', t.style.width || window.getComputedStyle(t).width);
+  }catch(e){console.warn(e)}
+}
+function loadCols(){
+  try{
+    const s=document.getElementById('sidebar');
+    const t=document.getElementById('toc');
+    const sw=localStorage.getItem('notes_reader_sidebar_w');
+    const tw=localStorage.getItem('notes_reader_toc_w');
+    if(sw) s.style.width=sw;
+    if(tw) t.style.width=tw;
+  }catch(e){console.warn(e)}
+}
 
+// 折叠控制
+function toggleCollapse(id){
+  const el=document.getElementById(id);
+  const btn=document.getElementById(id==="sidebar"?"toggle-sidebar":"toggle-toc");
+  if(el.classList.contains('collapsed')){
+    el.classList.remove('collapsed');
+    btn.innerText='收起';
+  }else{
+    el.classList.add('collapsed');
+    btn.innerText='展开';
+  }
+  saveCols();
+}
 
-const RAW_BASE=
-`https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/`;
+document.getElementById('toggle-sidebar').addEventListener('click',()=>toggleCollapse('sidebar'));
+document.getElementById('toggle-toc').addEventListener('click',()=>toggleCollapse('toc'));
 
+// 拖拽调整宽度
+function setupResizer(resizerId){
+  const res=document.getElementById(resizerId);
+  if(!res) return;
+  const leftId=res.dataset.left;
+  const rightId=res.dataset.right;
+  const leftEl=document.getElementById(leftId);
+  const rightEl=document.getElementById(rightId);
+  let startX, startLeftW, startRightW, dragging=false;
 
-const API_URL=
-`https://api.github.com/repos/${USER}/${REPO}/git/trees/${BRANCH}?recursive=1`;
+  const onMove=(e)=>{
+    if(!dragging) return;
+    const dx=(e.touches?e.touches[0].clientX:e.clientX)-startX;
+    const newLeft= Math.max(40, startLeftW + dx);
+    const newRight= Math.max(40, startRightW - dx);
+    leftEl.style.width=newLeft+'px';
+    rightEl.style.width=newRight+'px';
+  };
+  const onUp=()=>{ if(!dragging) return; dragging=false; saveCols(); window.removeEventListener('mousemove',onMove); window.removeEventListener('mouseup',onUp); window.removeEventListener('touchmove',onMove); window.removeEventListener('touchend',onUp); };
 
+  res.addEventListener('mousedown',(e)=>{
+    if(window.innerWidth<=900) return; // 小屏禁用
+    dragging=true; startX=e.clientX; startLeftW=leftEl.getBoundingClientRect().width; startRightW=rightEl.getBoundingClientRect().width; window.addEventListener('mousemove',onMove); window.addEventListener('mouseup',onUp); e.preventDefault();
+  });
+  res.addEventListener('touchstart',(e)=>{
+    if(window.innerWidth<=900) return;
+    dragging=true; startX=e.touches[0].clientX; startLeftW=leftEl.getBoundingClientRect().width; startRightW=rightEl.getBoundingClientRect().width; window.addEventListener('touchmove',onMove); window.addEventListener('touchend',onUp); e.preventDefault();
+  });
+}
 
-const filelist=
-document.getElementById("filelist");
+setupResizer('resizer-1');
+setupResizer('resizer-2');
+loadCols();
 
-
-const content=
-document.getElementById("content");
-
-
-const toc=
-document.getElementById("toc-list");
-
-
-let currentFile=null;
-
-
-
-//=========================
-// markdown解析
-//=========================
-
-
+//========================= markdown & repo logic =========================
 marked.setOptions({
-
- highlight:function(code,lang){
-
-
-if(lang && hljs.getLanguage(lang)){
-
-
-return hljs.highlight(code,
-{
- language:lang
- }).value;
-
-
-}
-
-
-return hljs.highlightAuto(code).value;
-
-
-}
-
-
+  highlight:function(code,lang){
+    if(lang && hljs.getLanguage(lang)) return hljs.highlight(code,{language:lang}).value;
+    return hljs.highlightAuto(code).value;
+  }
 });
 
-
-
-
-
-//=========================
-// 获取md文件
-//=========================
-
-
-fetch(API_URL)
-
-
-.then(res=>res.json())
-
-
-.then(data=>{
-
-
-let files=
-data.tree.filter(
-
-x=>x.path.endsWith(".md")
-
-);
-
-
-filelist.innerHTML="";
-
-
-files.forEach(file=>{
-
-
-let div=
-document.createElement("div");
-
-
-
-div.className="file-item";
-
-
-
-div.innerHTML=
-"📄 "+file.path;
-
-
-
-div.onclick=function(){
-
-
-loadMarkdown(file.path,div);
-
-
-};
-
-
-
-filelist.appendChild(div);
-
-
-
-});
-
-
-
-loadMarkdown("README.md");
-
-
-});
-
-
-
-
-
-
-
-//=========================
-// 加载文章
-//=========================
-
+fetch(API_URL).then(res=>res.json()).then(data=>{
+  let files=data.tree.filter(x=>x.path.endsWith('.md'));
+  filelist.innerHTML='';
+  files.forEach(file=>{
+    let div=document.createElement('div');
+    div.className='file-item';
+    div.innerHTML='📄 '+file.path;
+    div.onclick=function(){ loadMarkdown(file.path,div); };
+    filelist.appendChild(div);
+  });
+  loadMarkdown('README.md');
+}).catch(err=>{filelist.innerText='无法加载文件列表'});
 
 function loadMarkdown(path,element){
+  fetch(RAW_BASE+encodeURI(path)).then(res=>res.text()).then(md=>{
+    md=fixImages(md);
+    content.innerHTML=marked.parse(md);
+    generateTOC();
+    if(window.MathJax && MathJax.typeset) MathJax.typeset();
+  }).catch(err=>{content.innerText='加载失败'});
 
-
-fetch(
-RAW_BASE+encodeURI(path)
-)
-
-
-.then(res=>res.text())
-
-
-.then(md=>{
-
-
-md=fixImages(md);
-
-
-
-content.innerHTML=
-marked.parse(md);
-
-
-
-generateTOC();
-
-
-
-MathJax.typeset();
-
-
-
-});
-
-
-if(element){
-
-
-document.querySelectorAll(".file-item")
-.forEach(
-x=>x.classList.remove("active")
-);
-
-
-
-element.classList.add("active");
-
-
+  if(element){
+    document.querySelectorAll('.file-item').forEach(x=>x.classList.remove('active'));
+    element.classList.add('active');
+  }
 }
-
-
-}
-
-
-
-
-
-
-
-//=========================
-// 图片路径转换
-//=========================
-
 
 function fixImages(md){
-
-
-
-return md.replace(
-
-/!\[(.*?)\]\((?:\.\/)?media\/(.+?)\)/g,
-
-
-function(match,alt,path){
-
-
-return `![${alt}](${RAW_BASE}media/${encodeURIComponent(path)})`;
-
-
+  return md.replace(/!\[(.*?)\]\((?:\.\/)?media\/(.+?)\)/g,function(match,alt,path){
+    return `![${alt}](${RAW_BASE}media/${encodeURIComponent(path)})`;
+  });
 }
-
-
-);
-
-
-
-}
-
-
-
-
-
-
-
-//=========================
-// 生成目录
-//=========================
-
 
 function generateTOC(){
-
-
-toc.innerHTML="";
-
-
-let headers=
-content.querySelectorAll(
-"h1,h2,h3"
-);
-
-
-
-headers.forEach((h,index)=>{
-
-
-let id=
-"heading-"+index;
-
-
-
-h.id=id;
-
-
-
-let a=
-document.createElement("a");
-
-
-
-a.href="#"+id;
-
-
-a.innerText=
-h.innerText;
-
-
-
-if(h.tagName==="H2"){
-
-a.className="toc-h2";
-
+  toc.innerHTML='';
+  let headers=content.querySelectorAll('h1,h2,h3');
+  headers.forEach((h,index)=>{
+    let id='heading-'+index; h.id=id;
+    let a=document.createElement('a'); a.href='#'+id; a.innerText=h.innerText;
+    if(h.tagName==='H2') a.className='toc-h2';
+    if(h.tagName==='H3') a.className='toc-h3';
+    toc.appendChild(a);
+  });
 }
-
-
-if(h.tagName==="H3"){
-
-a.className="toc-h3";
-
-}
-
-
-
-toc.appendChild(a);
-
-
-
-});
-
-
-
-}
-
-
 
 </script>
 
-
-
 </body>
-
 </html>
