@@ -25,6 +25,7 @@ body > #app {
   display:flex;
   flex:1;
   min-width:0; /* 让子项可缩小 */
+  position:relative; /* 让展开按钮绝对定位 */
 }
 
 /* ==================== 左侧 文件结构 ==================== */
@@ -53,10 +54,6 @@ body > #app {
 .file-item{padding:7px 8px;margin:3px 0;border-radius:5px;cursor:pointer;transition:0.15s}
 .file-item:hover{background:#dfc69a;color:#000}
 .file-item.active{background:#c28b45;color:#000}
-
-/* ==================== 分隔条（可拖拽调整宽度） ==================== */
-.resizer{width:10px;cursor:col-resize;background:transparent;flex-shrink:0;z-index:5}
-.resizer:hover{background:rgba(0,0,0,0.06)}
 
 /* ==================== 中间 文章目录 ==================== */
 #toc{
@@ -105,6 +102,11 @@ body > #app {
 .markdown-body a{color:#000}
 .markdown-body img{max-width:100%}
 
+/* 表格样式：浅色背景，文字与正文一致 */
+.markdown-body table{background:#f5f5f5;border:1px solid #e0e0e0;border-collapse:collapse;color:#000;width:100%;}
+.markdown-body table th,.markdown-body table td{border:1px solid #e6e6e6;padding:8px;background:transparent;color:inherit}
+.markdown-body table thead th{background:#f0f0f0}
+
 /* 代码块：改成浅色背景并与正文文字保持一致 */
 .markdown-body pre{
   background:#f5f5f5 !important; /* 浅色背景 */
@@ -119,6 +121,13 @@ body > #app {
 /* 保持高亮但文字为正文颜色 */
 .markdown-body pre .hljs{background:transparent !important;color:inherit !important}
 
+/* 展开按钮 */
+.expand-btn{
+  position:absolute;
+  top:56px;
+  width:28px;height:60px;border-radius:4px;border:1px solid rgba(0,0,0,0.08);background:#f3e4c7;color:#000;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:50}
+.expand-btn:focus{outline:2px solid rgba(0,0,0,0.12)}
+
 /* 按钮旋转样式 */
 .collapsed .toggle-btn svg.rotate-180{transform:rotate(180deg)}
 
@@ -127,7 +136,6 @@ body > #app {
   #sidebar{width:170px}
   #toc{display:none}
   #content{padding:15px}
-  .resizer{display:none}
 }
 </style>
 </head>
@@ -146,8 +154,6 @@ body > #app {
     <div class="inner" id="filelist">加载中...</div>
   </div>
 
-  <div class="resizer" id="resizer-1" data-left="sidebar" data-right="toc" title="拖动调整宽度" aria-hidden="false"></div>
-
   <!-- 文章目录 -->
   <div id="toc">
     <h3>
@@ -160,10 +166,12 @@ body > #app {
     <div class="inner" id="toc-list"></div>
   </div>
 
-  <div class="resizer" id="resizer-2" data-left="toc" data-right="content" title="拖动调整宽度" aria-hidden="false"></div>
-
   <!-- 正文 -->
   <div id="content" class="markdown-body">加载中...</div>
+
+  <!-- 展开按钮（当栏被收起时显示） -->
+  <button id="expand-sidebar" class="expand-btn" aria-hidden="true" title="展开文件结构">▶</button>
+  <button id="expand-toc" class="expand-btn" aria-hidden="true" title="展开目录">▶</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -180,55 +188,82 @@ const filelist=document.getElementById("filelist");
 const content=document.getElementById("content");
 const toc=document.getElementById("toc-list");
 
-// helpers for persist
-function saveCols(){
+const expandSidebarBtn = document.getElementById('expand-sidebar');
+const expandTocBtn = document.getElementById('expand-toc');
+
+// helpers for persist (we keep widths fixed now but still store collapsed state)
+function saveState(){
   try{
     const s=document.getElementById('sidebar');
     const t=document.getElementById('toc');
-    localStorage.setItem('notes_reader_sidebar_w', s.style.width || window.getComputedStyle(s).width);
-    localStorage.setItem('notes_reader_toc_w', t.style.width || window.getComputedStyle(t).width);
+    localStorage.setItem('notes_reader_sidebar_collapsed', s.classList.contains('collapsed'));
+    localStorage.setItem('notes_reader_toc_collapsed', t.classList.contains('collapsed'));
   }catch(e){console.warn(e)}
 }
-function loadCols(){
+function loadState(){
   try{
     const s=document.getElementById('sidebar');
     const t=document.getElementById('toc');
-    const sw=localStorage.getItem('notes_reader_sidebar_w');
-    const tw=localStorage.getItem('notes_reader_toc_w');
-    if(sw && !s.classList.contains('collapsed')) s.style.width=sw;
-    if(tw && !t.classList.contains('collapsed')) t.style.width=tw;
+    const sc = localStorage.getItem('notes_reader_sidebar_collapsed') === 'true';
+    const tc = localStorage.getItem('notes_reader_toc_collapsed') === 'true';
+    if(sc) setCollapsed('sidebar', true); else setCollapsed('sidebar', false);
+    if(tc) setCollapsed('toc', true); else setCollapsed('toc', false);
   }catch(e){console.warn(e)}
 }
 
-// collapse/expand logic improved: store prev width and restore
+// setCollapsed: when collapse true, hide inner and show expand button; when false restore
 function setCollapsed(id, collapse){
   const el=document.getElementById(id);
-  const btn=document.getElementById(id==='sidebar'?'toggle-sidebar':'toggle-toc');
+  const inner=el.querySelector('.inner');
+  const btn = document.getElementById(id==='sidebar'?'expand-sidebar':'expand-toc');
+  const toggle = document.getElementById(id==='sidebar'?'toggle-sidebar':'toggle-toc');
+
   if(collapse){
-    // store previous width
-    const curW = window.getComputedStyle(el).width;
-    el.dataset.prevWidth = curW;
-    el.style.width = '0px';
+    // store prev state for possible future
+    el.dataset.prevWidth = window.getComputedStyle(el).width;
     el.classList.add('collapsed');
-    btn.querySelector('svg').classList.add('rotate-180');
-    btn.setAttribute('aria-pressed','true');
-    btn.title = '展开';
+    if(inner) inner.style.display='none';
+    // position and show expand button
+    positionExpandButton(id);
+    btn.style.display='flex';
+    btn.setAttribute('aria-hidden','false');
+    toggle.querySelector('svg').classList.add('rotate-180');
   }else{
-    const prev = el.dataset.prevWidth || (id==='sidebar'?'260px':'240px');
-    el.style.width = prev;
     el.classList.remove('collapsed');
-    btn.querySelector('svg').classList.remove('rotate-180');
-    btn.setAttribute('aria-pressed','false');
-    btn.title = '收起';
+    if(inner) inner.style.display='block';
+    btn.style.display='none';
+    btn.setAttribute('aria-hidden','true');
+    toggle.querySelector('svg').classList.remove('rotate-180');
   }
-  saveCols();
+  saveState();
 }
+
 function toggleCollapse(id){
   const el=document.getElementById(id);
   setCollapsed(id, !el.classList.contains('collapsed'));
 }
 
-// keyboard support for buttons
+function positionExpandButton(id){
+  const btn = document.getElementById(id==='sidebar'?'expand-sidebar':'expand-toc');
+  // compute left based on current sidebar and toc widths
+  const sidebar = document.getElementById('sidebar');
+  const tocEl = document.getElementById('toc');
+  const app = document.getElementById('app');
+  let left = 0;
+  if(id === 'sidebar'){
+    left = 0;
+  }else{
+    // place button between sidebar and content (where toc was)
+    const sidebarWidth = sidebar.classList.contains('collapsed') ? 0 : parseInt(window.getComputedStyle(sidebar).width);
+    left = sidebarWidth;
+    // if sidebar visible, offset a bit
+    // keep left within app bounds
+  }
+  // ensure button sits on top of content edge
+  btn.style.left = left + 'px';
+}
+
+// accessible toggles
 function makeToggleAccessible(btnId, targetId){
   const btn = document.getElementById(btnId);
   btn.addEventListener('click', ()=> toggleCollapse(targetId));
@@ -239,64 +274,16 @@ function makeToggleAccessible(btnId, targetId){
 makeToggleAccessible('toggle-sidebar','sidebar');
 makeToggleAccessible('toggle-toc','toc');
 
-// 拖拽调整宽度
-function setupResizer(resizerId){
-  const res=document.getElementById(resizerId);
-  if(!res) return;
-  const leftId=res.dataset.left;
-  const rightId=res.dataset.right;
-  const leftEl=document.getElementById(leftId);
-  const rightEl=document.getElementById(rightId);
-  let startX=0, startLeftW=0, startRightW=0, dragging=false;
+// expand buttons
+expandSidebarBtn.addEventListener('click', ()=> setCollapsed('sidebar', false));
+expandTocBtn.addEventListener('click', ()=> setCollapsed('toc', false));
+expandSidebarBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' ') { e.preventDefault(); setCollapsed('sidebar', false); } });
+expandTocBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' ') { e.preventDefault(); setCollapsed('toc', false); } });
 
-  const onMove=(clientX)=>{
-    if(!dragging) return;
-    const dx = clientX - startX;
-    let newLeft = startLeftW + dx;
-    let newRight = startRightW - dx;
-    // enforce minimums
-    const min=40;
-    if(newLeft < min) newLeft = min;
-    if(newRight < min) newRight = min;
-    leftEl.style.width = newLeft + 'px';
-    rightEl.style.width = newRight + 'px';
-  };
+// update expand button positions on resize
+window.addEventListener('resize', ()=>{ if(document.getElementById('sidebar').classList.contains('collapsed')) positionExpandButton('sidebar'); if(document.getElementById('toc').classList.contains('collapsed')) positionExpandButton('toc'); });
 
-  const onMouseMove = (e)=> onMove(e.clientX);
-  const onTouchMove = (e)=> onMove(e.touches[0].clientX);
-  const onUp = ()=>{ if(!dragging) return; dragging=false; saveCols(); window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onUp); window.removeEventListener('touchmove', onTouchMove); window.removeEventListener('touchend', onUp); document.body.style.userSelect=''; };
-
-  res.addEventListener('mousedown', (e)=>{
-    if(window.innerWidth<=900) return; // 小屏禁用
-    dragging = true;
-    startX = e.clientX;
-    startLeftW = leftEl.getBoundingClientRect().width;
-    startRightW = rightEl.getBoundingClientRect().width;
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onUp);
-    document.body.style.userSelect='none';
-    e.preventDefault();
-  });
-  res.addEventListener('touchstart', (e)=>{
-    if(window.innerWidth<=900) return;
-    dragging = true;
-    startX = e.touches[0].clientX;
-    startLeftW = leftEl.getBoundingClientRect().width;
-    startRightW = rightEl.getBoundingClientRect().width;
-    window.addEventListener('touchmove', onTouchMove);
-    window.addEventListener('touchend', onUp);
-    document.body.style.userSelect='none';
-    e.preventDefault();
-  });
-}
-
-setupResizer('resizer-1');
-setupResizer('resizer-2');
-
-// restore widths on load
-loadCols();
-
-//========================= markdown & repo logic =========================
+// load repo files
 marked.setOptions({
   highlight:function(code,lang){
     if(lang && hljs.getLanguage(lang)) return hljs.highlight(code,{language:lang}).value;
@@ -350,6 +337,8 @@ function generateTOC(){
   });
 }
 
+// initialize collapse state from localStorage
+loadState();
 </script>
 </body>
 </html>
