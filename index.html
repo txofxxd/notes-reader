@@ -69,10 +69,12 @@ body{
     1px solid #d2b48c;
 
 
-    color:#4a3828;
+    color:#000;
+
+    /* 放到最左 */
+    order: 1;
 
 }
-
 
 
 #sidebar h3{
@@ -80,7 +82,6 @@ body{
     margin-top:0;
 
 }
-
 
 
 .file-item{
@@ -104,7 +105,6 @@ body{
 }
 
 
-
 .file-item:hover{
 
 
@@ -117,18 +117,16 @@ body{
 }
 
 
-
 .file-item.active{
 
 
     background:#c28b45;
 
 
-    color:white;
+    color:#000;
 
 
 }
-
 
 
 
@@ -156,11 +154,12 @@ body{
     1px solid #d2b48c;
 
 
-    color:#4a3828;
+    color:#000;
 
+    /* 放到中间 */
+    order: 2;
 
 }
-
 
 
 #toc h3{
@@ -168,7 +167,6 @@ body{
     margin-top:0;
 
 }
-
 
 
 #toc a{
@@ -180,14 +178,13 @@ body{
     margin:7px 0;
 
 
-    color:#59402a;
+    color:#000;
 
 
     text-decoration:none;
 
 
 }
-
 
 
 #toc a:hover{
@@ -199,13 +196,11 @@ body{
 }
 
 
-
 .toc-h2{
 
     padding-left:15px;
 
 }
-
 
 
 .toc-h3{
@@ -215,7 +210,6 @@ body{
     font-size:13px;
 
 }
-
 
 
 
@@ -240,8 +234,10 @@ body{
     background:#2b2118;
 
 
-}
+    /* 放到最右 */
+    order: 3;
 
+}
 
 
 /* 覆盖github markdown默认 */
@@ -249,13 +245,15 @@ body{
 .markdown-body{
 
 
-    max-width:950px;
+    /* 不限制宽度，让内容可伸展，避免空白 */
+    max-width:none;
+    width:100%;
 
 
     background:transparent!important;
 
 
-    color:#e8dcc8;
+    color:#000;
 
 
 }
@@ -267,7 +265,7 @@ body{
 .markdown-body h3{
 
 
-    color:#ffe7bd;
+    color:#000;
 
 
 }
@@ -278,7 +276,7 @@ body{
 .markdown-body li{
 
 
-    color:#e8dcc8;
+    color:#000;
 
 
 }
@@ -288,7 +286,7 @@ body{
 .markdown-body a{
 
 
-    color:#d9a066;
+    color:#000;
 
 
 }
@@ -324,11 +322,11 @@ body{
 .markdown-body code{
 
 
-    color:#ffd28a;
+    /* 保持代码高亮颜色，避免在深色背景上变黑不可读 */
+    color:inherit;
 
 
 }
-
 
 
 /* 手机适配 */
@@ -438,6 +436,7 @@ class="markdown-body">
 
 
 
+
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 
@@ -472,12 +471,8 @@ const RAW_BASE=
 `https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/`;
 
 
-
 const API_URL=
 `https://api.github.com/repos/${USER}/${REPO}/git/trees/${BRANCH}?recursive=1`;
-
-
-
 
 
 const filelist=
@@ -492,10 +487,7 @@ const toc=
 document.getElementById("toc-list");
 
 
-
 let currentFile=null;
-
-
 
 
 
@@ -506,7 +498,7 @@ let currentFile=null;
 
 marked.setOptions({
 
-highlight:function(code,lang){
+ highlight:function(code,lang){
 
 
 if(lang && hljs.getLanguage(lang)){
@@ -514,8 +506,8 @@ if(lang && hljs.getLanguage(lang)){
 
 return hljs.highlight(code,
 {
-language:lang
-}).value;
+ language:lang
+ }).value;
 
 
 }
@@ -528,9 +520,6 @@ return hljs.highlightAuto(code).value;
 
 
 });
-
-
-
 
 
 
@@ -558,9 +547,7 @@ x=>x.path.endsWith(".md")
 );
 
 
-
 filelist.innerHTML="";
-
 
 
 files.forEach(file=>{
@@ -609,7 +596,6 @@ loadMarkdown("README.md");
 
 
 
-
 //=========================
 // 加载文章
 //=========================
@@ -649,7 +635,6 @@ MathJax.typeset();
 });
 
 
-
 if(element){
 
 
@@ -667,8 +652,6 @@ element.classList.add("active");
 
 
 }
-
-
 
 
 
@@ -704,8 +687,6 @@ return `![${alt}](${RAW_BASE}media/${encodeURIComponent(path)})`;
 
 
 }
-
-
 
 
 
