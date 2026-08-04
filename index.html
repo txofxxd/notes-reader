@@ -153,6 +153,22 @@ body > #app {
   #content{padding:15px}
 }
 </style>
+
+<!-- MathJax config: enable single-dollar inline math and avoid typesetting inside code/pre -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\\[','\\]']],
+    processEscapes: true
+  },
+  options: {
+    skipHtmlTags: ['script','noscript','style','textarea','pre','code']
+  },
+  startup: { typeset: false }
+};
+</script>
+
 </head>
 
 <body>
@@ -204,21 +220,33 @@ const toc=document.getElementById("toc-list");
 const expandSidebarBtn = document.getElementById('expand-sidebar');
 const expandTocBtn = document.getElementById('expand-toc');
 
-// persist collapsed state only
+// persist collapsed state and last widths
 function saveState(){
   try{
     const s=document.getElementById('sidebar');
     const t=document.getElementById('toc');
     localStorage.setItem('notes_reader_sidebar_collapsed', s.classList.contains('collapsed'));
     localStorage.setItem('notes_reader_toc_collapsed', t.classList.contains('collapsed'));
+    // store last widths (if available)
+    if(s.dataset.prevWidth) localStorage.setItem('notes_reader_sidebar_w', s.dataset.prevWidth);
+    else localStorage.setItem('notes_reader_sidebar_w', window.getComputedStyle(s).width);
+    if(t.dataset.prevWidth) localStorage.setItem('notes_reader_toc_w', t.dataset.prevWidth);
+    else localStorage.setItem('notes_reader_toc_w', window.getComputedStyle(t).width);
   }catch(e){console.warn(e)}
 }
+
 function loadState(){
   try{
     const s=document.getElementById('sidebar');
     const t=document.getElementById('toc');
     const sc = localStorage.getItem('notes_reader_sidebar_collapsed') === 'true';
     const tc = localStorage.getItem('notes_reader_toc_collapsed') === 'true';
+    const sw = localStorage.getItem('notes_reader_sidebar_w');
+    const tw = localStorage.getItem('notes_reader_toc_w');
+    // restore widths if present
+    if(sw && !sc) s.style.width = sw;
+    if(tw && !tc) t.style.width = tw;
+    // apply collapsed state
     if(sc) setCollapsed('sidebar', true); else setCollapsed('sidebar', false);
     if(tc) setCollapsed('toc', true); else setCollapsed('toc', false);
   }catch(e){console.warn(e)}
@@ -232,7 +260,10 @@ function setCollapsed(id, collapse){
   const toggle = document.getElementById(id==='sidebar'?'toggle-sidebar':'toggle-toc');
 
   if(collapse){
-    el.dataset.prevWidth = window.getComputedStyle(el).width;
+    // save current width as prevWidth
+    const curW = window.getComputedStyle(el).width;
+    el.dataset.prevWidth = curW;
+    localStorage.setItem(id==='sidebar'?'notes_reader_sidebar_w':'notes_reader_toc_w', curW);
     el.classList.add('collapsed');
     if(inner) inner.style.display='none';
     positionExpandButtons();
@@ -242,6 +273,9 @@ function setCollapsed(id, collapse){
   }else{
     el.classList.remove('collapsed');
     if(inner) inner.style.display='block';
+    // restore width from stored value if any
+    const stored = localStorage.getItem(id==='sidebar'?'notes_reader_sidebar_w':'notes_reader_toc_w');
+    if(stored) el.style.width = stored;
     btn.style.display='none';
     btn.setAttribute('aria-hidden','true');
     toggle.querySelector('svg').classList.remove('rotate-180');
@@ -275,24 +309,32 @@ function positionExpandButtons(){
   const app = document.getElementById('app');
   const sidebar = document.getElementById('sidebar');
   const tocEl = document.getElementById('toc');
-  const appRect = app.getBoundingClientRect();
-  const sidebarWidth = sidebar.classList.contains('collapsed') ? 0 : sidebar.getBoundingClientRect().width;
-  // base left positions inside app (relative to app's left)
-  // sidebar button should be at very left (0)
-  // toc button should be at sidebarWidth (if sidebar visible) or slightly right if sidebar collapsed to avoid overlap
-  let sidebarLeft = 0; // always 0
-  let tocLeft = sidebarWidth;
-  // if sidebar is collapsed, push toc button right by 36px to avoid overlap
-  if(sidebar.classList.contains('collapsed')) tocLeft += 36;
-
-  // set positions relative to app
   const sidebarBtn = document.getElementById('expand-sidebar');
   const tocBtn = document.getElementById('expand-toc');
-  if(sidebar.classList.contains('collapsed')){
-    sidebarBtn.style.left = sidebarLeft + 'px';
+
+  const sidebarCollapsed = sidebar.classList.contains('collapsed');
+  const tocCollapsed = tocEl.classList.contains('collapsed');
+
+  // compute left offsets relative to app's left
+  let offset = 0;
+  // sidebar's button always at left edge of app
+  if(sidebarCollapsed){
+    sidebarBtn.style.left = offset + 'px';
+    sidebarBtn.style.display = 'flex';
+  } else {
+    sidebarBtn.style.display = 'none';
   }
-  if(tocEl.classList.contains('collapsed')){
+
+  // toc button: position after sidebar width (if visible) else slightly to right to avoid overlap
+  const sidebarWidth = sidebarCollapsed ? 0 : parseInt(window.getComputedStyle(sidebar).width) || 0;
+  let tocLeft = sidebarWidth;
+  if(sidebarCollapsed) tocLeft += 36; // offset if sidebar collapsed
+
+  if(tocCollapsed){
     tocBtn.style.left = tocLeft + 'px';
+    tocBtn.style.display = 'flex';
+  } else {
+    tocBtn.style.display = 'none';
   }
 }
 
@@ -327,7 +369,14 @@ function loadMarkdown(path,element){
     md=fixImages(md);
     content.innerHTML=marked.parse(md);
     generateTOC();
-    if(window.MathJax && MathJax.typeset) MathJax.typeset();
+    // use MathJax.typesetPromise to properly render inline $...$ math
+    if(window.MathJax && MathJax.typesetPromise){
+      MathJax.typesetPromise([content]).catch((err)=>{
+        console.warn('MathJax typeset error:', err.message);
+      });
+    } else if(window.MathJax && MathJax.typeset){
+      MathJax.typeset();
+    }
   }).catch(err=>{content.innerText='加载失败'});
 
   if(element){
@@ -358,5 +407,6 @@ function generateTOC(){
 loadState();
 positionExpandButtons();
 </script>
+
 </body>
 </html>
